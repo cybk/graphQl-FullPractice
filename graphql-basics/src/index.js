@@ -28,25 +28,29 @@ const posts = [
         id:'1',
         title: 'first title',
         body: 'Just a initial post for testing',
-        published: true
+        published: true,
+        author: '1'
     },
     {
         id:'2',
         title: 'second title',
         body: 'scond post used for demo',
-        published: false
+        published: false,
+        author:'1'
     },
     {
         id:'3',
         title: 'a post',
         body: 'Amlo is a looser',
-        published: true
+        published: true,
+        author:'3'
     },
     {
         id:'4',
         title: 'draft',
         body: 'this post was never published',
-        published: false
+        published: false,
+        author: '2'
     }
 ]
 
@@ -73,6 +77,7 @@ const typeDefs = `
         title: String!
         body: String!
         published: Boolean!
+        author: User!
     }
 `
 
@@ -108,6 +113,12 @@ const resolvers = {
                body: 'some a cool body!',
                published: true
            }
+        }
+    },
+    Post: {
+        author(parent, args, ctx, info) {
+            console.log(parent)
+            return users.find(elem => elem.id === parent.author);
         }
     }
 }
