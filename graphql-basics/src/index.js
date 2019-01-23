@@ -54,12 +54,31 @@ const posts = [
     }
 ]
 
+const comments = [
+    {
+        id: '1',
+        text: 'First comment'
+    },
+    {
+        id: '2',
+        text: 'Second comment'
+    },
+    {
+        id: '3',
+        text: 'Third comment'
+    },
+    {
+        id: '3',
+        text: 'forth comment'
+    }
+]
 
 // type definitions (Schema)
 const typeDefs = `
     type Query {
         users(query: String): [User!]!
         posts(query: Boolean): [Post!]!
+        comments(query: String): [Comment!]!
         me: User!
         post: Post!
     }
@@ -78,6 +97,11 @@ const typeDefs = `
         body: String!
         published: Boolean!
         author: User!
+    }
+
+    type Comment {
+        id: ID!
+        text: String!
     }
 `
 
@@ -113,6 +137,13 @@ const resolvers = {
                body: 'some a cool body!',
                published: true
            }
+        },
+        comments(parent, args, ctx, info){
+            if (!args.query){
+                return comments;
+            }
+
+            return comments.filter( elem => elem.text.toLowerCase().includes(args.query.toLowerCase()));
         }
     },
     Post: {
