@@ -1,4 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga'
+import uuidv4  from 'uuid/v4'
 
 // demo user data
 
@@ -91,6 +92,12 @@ const typeDefs = `
         post: Post!
     }
 
+    type Mutation {
+        createUser (name: String!, email: String!, age: Int): User!
+        createPost (title: String!, body: String!, published: Boolean!, author: ID!): Post!
+        createComment (text: String!, author: ID!, post: ID!): Comment!
+    }
+
     type User {
         id: ID!
         name: String!
@@ -156,6 +163,68 @@ const resolvers = {
             }
 
             return comments.filter( elem => elem.text.toLowerCase().includes(args.query.toLowerCase()));
+        }
+    },
+    Mutation: {
+        createUser (parent, args, ctx, info){
+            const emailTaken = users.some( elem => elem.email === args.email);
+
+            if (emailTaken){
+                throw new Error('Email already taken.');
+            }
+
+            const user = {
+                id: uuidv4(),
+                name: args.name,
+                email: args.email,
+                age: args.age
+
+            }
+
+            users.push(user);
+
+            return user;
+
+        },
+        createPost (parent, args, ctx, info){
+            const userExists = users.some(elem => elem.id === args.author);
+            if (!userExists){
+                throw new Error('User does not exists.');
+            }
+
+            const post = {
+                id: uuidv4(),
+                title: args.title,
+                body: args.body,
+                published: args.published,
+                author: args.author
+            }
+            
+            posts.push(post);
+
+            return post;
+        },
+        createComment (parent, args, ctx, info){
+            const userExists = users.some(elem => elem.id === args.author);
+            if (!userExists){
+                throw new Error('User does not exists.');
+            }
+
+            const postExist = posts.some(elem => elem.id === args.post && elem.published);
+            if (!postExist){
+                throw new Error('Post does not exists or it has not been published.');
+            }
+
+            const comment = {
+                id: uuidv4(),
+                text: args.text,
+                author: args.author,
+                post: args.post
+            }
+
+            comments.push(comment);
+
+            return comment;
         }
     },
     Post: {
