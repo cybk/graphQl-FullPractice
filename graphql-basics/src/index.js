@@ -3,7 +3,7 @@ import uuidv4  from 'uuid/v4'
 
 // demo user data
 
-const users = [
+let users = [
     {
         id: '1',
         name: 'Juan',
@@ -24,7 +24,7 @@ const users = [
     }
 ]
 
-const posts = [
+let posts = [
     {
         id:'1',
         title: 'first title',
@@ -55,7 +55,7 @@ const posts = [
     }
 ]
 
-const comments = [
+let comments = [
     {
         id: '1',
         text: 'First comment',
@@ -94,6 +94,7 @@ const typeDefs = `
 
     type Mutation {
         createUser (data: CreateUserInput!): User!
+        deleteUser (user: ID!): User!
         createPost (data: CreatePostInput!): Post!
         createComment (data: CreateCommentInput!): Comment!
     }
@@ -202,6 +203,29 @@ const resolvers = {
 
             return user;
 
+        },
+        deleteUser (parent, args, ctx, info) {
+            const userIndex = users.findIndex(elem => elem.id === args.user);
+
+            if(userIndex < 0){
+                throw new Error('User does not exist.');
+            }
+
+            const deletedUsers = users.splice(userIndex, 1);
+
+            posts = posts.filter(elem => {
+               const match = elem.author === args.user;
+               
+               if (match){
+                   comments = comments.filter((comment) => comment.post !== elem.id);
+               }
+
+               return !match
+            });
+
+            comments = comments.filter (comment => comment.author !== args.user);
+
+            return deletedUsers[0];
         },
         createPost (parent, args, ctx, info){
             const userExists = users.some(elem => elem.id === args.data.author);
