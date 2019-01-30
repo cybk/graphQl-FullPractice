@@ -42,6 +42,34 @@ const Mutation= {
 
         return deletedUsers[0];
     },
+    updateUser(parent, {id, data}, {db}, info){
+
+        const user = db.users.find(user => user.id === id);
+
+        if (!user){
+            throw new Error("User does not exist");
+        }
+
+        if (typeof data.email === 'string'){
+            const emailTaken = db.users.some(user => user.email === data.email);
+
+            if (emailTaken){
+                throw new Error('the email is in use');
+            }
+
+            user.email = data.email;
+        }
+
+        if (typeof data.name === 'string'){
+            user.name = data.name;
+        }
+
+        if (typeof data.age !== undefined){
+            user.age = data.age;
+        }
+
+        return user;
+    },
     createPost (parent, args, {db}, info){
         const userExists = db.users.some(elem => elem.id === args.data.author);
         if (!userExists){
@@ -69,6 +97,28 @@ const Mutation= {
         db.comments = db.comments.filter(comment => comment.post !== args.post);
 
         return deletedPost[0];
+    },
+    updatePost (parent, args, {db}, info){
+        const  {id, data} = args;
+        const post = db.posts.find(elem => elem.id == id);
+
+        if (!post){
+            throw new Error('Post does not exist.');
+        }
+
+        if (typeof data.title === 'string'){
+            post.title = data.title;
+        }
+
+        if (typeof data.body === 'string'){
+            post.body = data.body;
+        }
+
+        if (typeof data.published === 'boolean'){
+            post.published = data.published;
+        }
+
+        return post;
     },
     createComment (parent, args, {db}, info){
         const userExists = db.users.some(elem => elem.id === args.data.author);
@@ -101,6 +151,20 @@ const Mutation= {
 
         return deletedComment[0];
 
+    },
+    updateComment (parent, args, {db}, info){
+        const { id, text} = args;
+        const comment = db.comments.find(elem => elem.id === id);
+
+        if (!comment){
+            throw new Error('Comment does not exist.');
+        }
+
+        if (typeof text === 'string'){
+            comment.text = text;
+        }
+
+        return comment;
     }
 }
 
