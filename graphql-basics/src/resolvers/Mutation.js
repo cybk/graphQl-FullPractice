@@ -83,7 +83,12 @@ const Mutation= {
         
         db.posts.push(post);
         if (post.published){
-            pubsub.publish('post', {post});
+            pubsub.publish('post', {
+                post:{
+                    mutation: 'CREATED',
+                    data: post
+                }
+            });
         }
 
         return post;
@@ -95,15 +100,25 @@ const Mutation= {
             throw new Error ("Post does not exist.");
         }
 
-        const deletedPost = db.posts.splice(postIndex, 1);
+        const [post] = db.posts.splice(postIndex, 1);
 
         db.comments = db.comments.filter(comment => comment.post !== args.post);
 
+        if (post.published){
+            pubsub.publish('post', {
+                post:{
+                    mutation: 'DELETED',
+                    data: post
+                }
+            });
+        }
+
         return deletedPost[0];
     },
-    updatePost (parent, args, {db}, info){
+    updatePost (parent, args, {db, pubsub}, info){
         const  {id, data} = args;
         const post = db.posts.find(elem => elem.id == id);
+        const originalPost = {...post};
 
         if (!post){
             throw new Error('Post does not exist.');
@@ -119,6 +134,30 @@ const Mutation= {
 
         if (typeof data.published === 'boolean'){
             post.published = data.published;
+
+            if (originalPost.published && !post.published){
+                pubsub.publish('post', {
+                    post: {
+                        mutation: 'DELETED',
+                        data: originalPost
+                    }
+                });
+            }else if (!originalPost.published && post.published) {
+                pubsub.publish('post', {
+                    post: {
+                        mutation: 'CREATED',
+                        data: post
+                    }
+                });
+
+            } 
+        } else if(post.published ){
+            pubsub.publish('post', {
+                post: {
+                    mutation: 'UPDATED',
+                    data: post
+                }
+            });
         }
 
         return post;
