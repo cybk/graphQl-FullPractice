@@ -12,11 +12,11 @@ services:
         # managementApiSecret: my-secret
         databases:
           default:
-            connector: 
-            host: 
-            port: 
-            database: 
+            connector: postgres
+            host: ec2-107-21-99-237.compute-1.amazonaws.com
+            port: '5432'
+            database: d5vgii160h3qfs
             ssl: true
-            user: 
-            password: 
+            user: fdzonggklsmknd
+            password: 77f57d12e00e515b101df9c901ba8d7cfc7394792cd7d294c732be7da2609a39
             migrations: true
