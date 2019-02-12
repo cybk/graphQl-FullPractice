@@ -6,10 +6,39 @@ const prisma = new Prisma({
 
 });
 
-prisma.query.users(null, '{id name email posts {id title}}').then ( data => {
-    console.log(JSON.stringify(data, undefined, 2));
-});
+const createPostForUser =  async (authorId, data) => {
+    const post = await prisma.mutation.createPost({
+        data: {
+            ...data,
+            author: {
+                connect: {
+                    id: authorId
+                }
+            }
+        }
+    }, '{id}');
 
-prisma.query.comments(null, '{id text author{id name}}').then(data => {
-    console.log(JSON.stringify(data, undefined, 2));
-});
+    const user = await prisma.query.user({
+        where: {
+            id: authorId
+        }
+    }, '{id name email posts {id title published}}');
+
+    return user;
+}
+
+const updatePostForUser = async (postId, data) => {
+    const post = await prisma.mutation.updatePost({
+        data,
+        where: {
+            id: postId
+        }
+    }, '{author{id}}');
+    const user = await prisma.mutation.users({
+        where: {
+            id: post.author.id
+        }
+    }, '{ id  name email posts { id title published }}');
+
+    return user;
+}
