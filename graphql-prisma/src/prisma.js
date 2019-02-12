@@ -6,7 +6,19 @@ const prisma = new Prisma({
 
 });
 
+prisma.exists.Comment({
+    id: "cjrwflk7903yq0862vsks1d58"
+}).then( (exist) =>{
+    console.log('Comment exist: ', exist);
+});
+
 const createPostForUser =  async (authorId, data) => {
+    const userExists = await prisma.exists.User({ id: authorId });
+    if (!userExists){
+        throw new Error('User not found!');
+        
+    }
+
     const post = await prisma.mutation.createPost({
         data: {
             ...data,
@@ -16,29 +28,26 @@ const createPostForUser =  async (authorId, data) => {
                 }
             }
         }
-    }, '{id}');
+    }, '{author { id name email posts { id title published } } }');
 
-    const user = await prisma.query.user({
-        where: {
-            id: authorId
-        }
-    }, '{id name email posts {id title published}}');
-
-    return user;
+    return post.author;
 }
 
 const updatePostForUser = async (postId, data) => {
+    const exists = await prism.exist.Post({
+        id: postId
+    });
+
+    if (!exists){
+        throw new Error('Post not found');
+    }
+
     const post = await prisma.mutation.updatePost({
         data,
         where: {
             id: postId
         }
-    }, '{author{id}}');
-    const user = await prisma.mutation.users({
-        where: {
-            id: post.author.id
-        }
-    }, '{ id  name email posts { id title published }}');
+    }, '{author { id name email posts { id title published } } }');
 
-    return user;
+    return post.author;
 }
