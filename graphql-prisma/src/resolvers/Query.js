@@ -1,18 +1,17 @@
 const Query = {
-    users(parent, args, {db}, info) {
-        if (!args.query){
-            return db.users
+    users(parent, args, {prisma}, info) {
+        const opArgs = {};
+
+        if(args.query) {
+            opArgs.where = {
+                name_contains: args.query
+            }
         }
 
-        return db.users.filter(elem => 
-                elem.name.toLowerCase().includes(args.query.toLowerCase()))
+        return prisma.query.users(opArgs, info);
     },
-    posts(parent, args, {db}, info){
-        if(!args.query){
-            return db.posts
-        }
-
-        return db.posts.filter(elem => elem.published == args.query)
+    posts(parent, args, {prisma}, info){
+        return prisma.query.posts(null, info);
     },
     me () {
        return {
