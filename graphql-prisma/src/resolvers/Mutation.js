@@ -1,7 +1,14 @@
-import uuidv4  from 'uuid/v4'
+import bcrypt from 'bcryptjs'
 
 const Mutation= {
     async createUser (parent, args, {prisma}, info){
+
+        if (args.data.password.length < 8){
+            throw new Error('Password must be 8 charachters or longer');
+        }
+
+        const password = await bcrypt.hash(args.data.password, 10); // 10 is a salt
+
         const userExist = await prisma.exists.User({email: args.data.email});
 
         if (userExist){
@@ -9,7 +16,10 @@ const Mutation= {
         }
 
         return prisma.mutation.createUser({
-            data: args.data
+            data: {
+                ...args.data,
+                password: password
+            }
         }, info);
     },
 
