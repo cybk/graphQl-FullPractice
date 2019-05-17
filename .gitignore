@@ -2,3 +2,4 @@
 graphql-basics/node_modules/
 
 node_modules/
+graphql-prisma/prisma/docker-compose.yml
